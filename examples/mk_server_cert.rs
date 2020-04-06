@@ -207,8 +207,6 @@ async fn main () -> Result<(), Box<dyn Error>> {
     let keypair = EcdsaKeyPair::from_pkcs8(&ECDSA_P384_SHA384_FIXED_SIGNING, pkcs8_doc.as_ref())
         .map_err(|e| e.to_string())?;
 
-//    let pub_key = keypair.public_key();
-
     let spki = SubjectPublicKeyInfo {
         algorithm: KeyAlgorithmIdentifier::P384,
         public_key: keypair.public_key().as_ref().to_vec(),
