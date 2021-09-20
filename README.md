@@ -1,10 +1,9 @@
 AWS KMS CA
 ----------
 
-**WARNING** this is not something you should use unless you know **exactly** what you are doing, and why. 
+**WARNING** this is not something you should use unless you know **exactly** what you are doing, and why.   
 
-Tools for assembling an X.509 certificate and sending it to an AWS KMS asymmetric CMK for signing
-Examples of how to build a self-signed root Certificate Authority, a Server leaf certificate, and a Client leaf certificate are in the examples directory.
+Tools for assembling an X.509 certificate and sending it to an AWS KMS asymmetric CMK for signing.
 
 Supported Key Specs
 -------------------
