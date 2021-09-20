@@ -20,7 +20,7 @@ All examples assume the following prereqs:
  * AWS CLI credentials already provisioned to access the CMK for the `sign` function
 
 
-**Creating a self-signed root CA**
+**Creating a self-signed root CA**  
 create the self-signed CA root certificate, using the CMK for signing.
 ```
 cargo run --example mk_ca_cert -- --days 3650  --region us-east-2 --key_id arn:aws:kms:us-east-2:999999999999:key/00000000-0000-0000-0000-00000000000
@@ -43,7 +43,7 @@ C39925369AE40AE88CF23190F8CD4C597B6F04E4CF3EE96DFA21230058E988C2
 ```
 
 
-**Creating a server certificate that is signed by our KMS CA**
+**Creating a server certificate that is signed by our KMS CA**  
 create a server (named _somewhere_)private-key and certificate signed by the CA.  
 ```
 cargo run --example mk_server_cert -- --days 365  --region us-east-2 --key-id arn:aws:kms:us-east-2:999999999999:key/00000000-0000-0000-0000-00000000000 --dns-name "localhost" --ip-addr "127.0.0.1" --ip-addr "0:0:0:0:0:0:0:1"a --common-name 'somewhere' --auth-key-id C39925369AE40AE88CF23190F8CD4C597B6F04E4CF3EE96DFA21230058E988C2 --signing-algorithm ECDSA_SHA_256
@@ -58,7 +58,7 @@ openssl verify -trusted ca.pem server.pem
 ```
 
 
-**Creating a client certificate that is signed by our KMS CA**
+**Creating a client certificate that is signed by our KMS CA**  
 create a client (named _someone_) private-key and certificate signed by the CA.  
 ```
 cargo run --example mk_client_cert -- --days 365  --region us-east-2 --key-id arn:aws:kms:us-east-2:999999999999:key/00000000-0000-0000-0000-00000000000 --common-name 'someone' --auth-key-id C39925369AE40AE88CF23190F8CD4C597B6F04E4CF3EE96DFA21230058E988C2 --signing-algorithm ECDSA_SHA_256
@@ -73,7 +73,7 @@ openssl verify -trusted ca.pem client.pem
 ```
 
 
-**Getting the CA's public key**
+**Getting the CA's public key**  
 not normally needed, but can be useful to verify the `Subject Public Key Info` claim in the root CA's cert. 
 ```
 cargo run --example get_cmk_pkey -- --region us-east-2 --key-id arn:aws:kms:us-east-2:999999999999:key/00000000-0000-0000-0000-00000000000
