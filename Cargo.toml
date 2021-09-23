@@ -8,16 +8,17 @@ edition = "2018"
 
 [dependencies]
 # Certificate module
-num-bigint = { version = "0.2" }
-yasna = { version="0.3.1", features = ["chrono","num-bigint","bit-vec"] }
+num-bigint = { version = "0.4.2" }
+yasna = { version="0.4.0", features = ["chrono","num-bigint","bit-vec"] }
 chrono = { version = "0.4" }
+bytes = { version = "0.5" }
 
 # Examples
+[dev-dependencies]
 ring = "0.16"
 tokio = { version = "0.2", features = ["macros"] }
 clap = "2.33.0"
 rusoto_core = {version = "0.43.0", default_features = false, features=["rustls"]}
 rusoto_kms  = {version = "0.43.0", default_features = false, features=["rustls"]}
-bytes = "0.5"
 base64 = "0.12"
 hex = "0.4.2"
