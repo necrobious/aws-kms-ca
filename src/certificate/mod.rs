@@ -36,7 +36,7 @@ impl From<Certificate> for Bytes {
 
 impl TryFrom<Bytes> for Certificate {
     type Error = &'static str;
-    fn try_from(bytes: Bytes) -> Result<Certificate, &'static str> {
+    fn try_from(bytes: Bytes) -> Result<Self, Self::Error> {
         yasna::parse_der(bytes.as_ref(), Certificate::decode_ber).map_err(|yasna_err| {
             match yasna_err.kind() {
                 ASN1ErrorKind::Invalid => "invalid",
