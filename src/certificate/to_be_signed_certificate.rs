@@ -1,4 +1,13 @@
-use yasna::{Tag, DEREncodable, DERWriter};
+use yasna::{
+    ASN1Error,
+    ASN1ErrorKind,
+    ASN1Result,
+    DERWriter,
+    DEREncodable,
+    BERReader,
+    BERDecodable,
+    Tag
+};
 use crate::certificate::x509_version::X509Version;
 use crate::certificate::serial_number::SerialNumber;
 use crate::certificate::key_algorithm_identifier::KeyAlgorithmIdentifier;
@@ -179,6 +188,27 @@ impl DEREncodable for ToBeSignedCertificate {
         });
     }
 }
+
+impl BERDecodable for ToBeSignedCertificate {
+    fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        reader.read_sequence(|reader| {
+            let builder = ToBeSignedCertificate::builder();
+            builder
+                .version(X509Version::decode_ber(reader.next())?)
+                .serial(SerialNumber::decode_ber(reader.next())?)
+                .signature_algorithm(SignatureAlgorithmIdentifier::decode_ber(reader.next())?)
+                .issuer(Name::decode_ber(reader.next())?)
+                .validity(Validity::decode_ber(reader.next())?)
+                .subject(Name::decode_ber(reader.next())?)
+                .subject_public_key_info(SubjectPublicKeyInfo::decode_ber(reader.next())?)
+                // TODO: add parsing of extensions
+                .build()
+                .map_err(|_|ASN1Error::new(ASN1ErrorKind::Invalid))
+        })
+    }
+}
+
+
 
 
 #[cfg(test)]
