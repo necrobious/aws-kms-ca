@@ -11,14 +11,14 @@ edition = "2018"
 num-bigint = { version = "0.4.2" }
 yasna = { version="0.4.0", features = ["chrono","num-bigint","bit-vec"] }
 chrono = { version = "0.4" }
-bytes = { version = "0.5" }
+bytes = { version = "1" }
 
 # Examples
 [dev-dependencies]
 ring = "0.16"
-tokio = { version = "0.2", features = ["macros"] }
-clap = "2.33.0"
-rusoto_core = {version = "0.43.0", default_features = false, features=["rustls"]}
-rusoto_kms  = {version = "0.43.0", default_features = false, features=["rustls"]}
-base64 = "0.12"
-hex = "0.4.2"
+tokio = { version = "1.0", features = [ "full" ] } 
+clap = "2.33.3"
+rusoto_core = {version = "0.47.0", default_features = false, features=["rustls"]}
+rusoto_kms  = {version = "0.47.0", default_features = false, features=["rustls"]}
+base64 = "0.13"
+hex = "0.4.3"
