@@ -10,6 +10,9 @@ use yasna::{
     BERDecodable,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
+
 #[derive(Clone, Debug, PartialEq,)]
 pub enum SignatureAlgorithmIdentifier {
     EcdsaWithSha256,
@@ -18,7 +21,10 @@ pub enum SignatureAlgorithmIdentifier {
 }
 
 impl BERDecodable for SignatureAlgorithmIdentifier {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "SignatureAlgorithmIdentifier::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing signature algorithm identifier");
         reader.read_sequence(|reader| {
             let e256 = ObjectIdentifier::from_slice(&[1,2,840,10045,4,3,2]);
             let e384 = ObjectIdentifier::from_slice(&[1,2,840,10045,4,3,3]);

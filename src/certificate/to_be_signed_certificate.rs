@@ -22,7 +22,10 @@ use std::convert::From;
 use chrono::prelude::*;
 use bytes::Bytes;
 
-#[derive(Clone)]
+#[cfg(feature = "tracing")]
+use tracing::{debug};
+
+#[derive(Clone, Debug, PartialEq,)]
 pub struct ToBeSignedCertificateBuilder {
     version: Option<X509Version>,
     serial: Option<SerialNumber>,
@@ -106,6 +109,11 @@ impl ToBeSignedCertificateBuilder {
         self
     }
 
+    pub fn extensions(mut self, mut extensions: Vec<Extension>) -> Self {
+        self.extensions.append(&mut extensions);
+        self
+    }
+
 
     pub fn extension(mut self, extension: Extension) -> Self {
         self.extensions.push(extension);
@@ -142,7 +150,7 @@ impl Default for ToBeSignedCertificateBuilder {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq,)]
 pub struct ToBeSignedCertificate {
     pub version: X509Version,
     pub serial: SerialNumber,
@@ -190,25 +198,56 @@ impl DEREncodable for ToBeSignedCertificate {
 }
 
 impl BERDecodable for ToBeSignedCertificate {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "ToBeSignedCertificate::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing to-be-signed certificate");
         reader.read_sequence(|reader| {
-            let builder = ToBeSignedCertificate::builder();
+
+            let mut builder = ToBeSignedCertificate::builder();
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing version");
+            builder = builder.version(X509Version::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing serial number");
+            builder = builder.serial(SerialNumber::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing signature algorithm");
+            builder = builder.signature_algorithm(SignatureAlgorithmIdentifier::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing issuer");
+            builder = builder.issuer(Name::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing validity");
+            builder = builder.validity(Validity::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing subject");
+            builder = builder.subject(Name::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing subject public key info");
+            builder = builder.subject_public_key_info(SubjectPublicKeyInfo::decode_ber(reader.next())?);
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing extensions");
+            builder = builder.extensions(reader.next().read_tagged(Tag::context(3), |reader| {
+                reader.collect_sequence_of(|inner| {
+                    Extension::decode_ber(inner)
+                })
+            })?);
+
             builder
-                .version(X509Version::decode_ber(reader.next())?)
-                .serial(SerialNumber::decode_ber(reader.next())?)
-                .signature_algorithm(SignatureAlgorithmIdentifier::decode_ber(reader.next())?)
-                .issuer(Name::decode_ber(reader.next())?)
-                .validity(Validity::decode_ber(reader.next())?)
-                .subject(Name::decode_ber(reader.next())?)
-                .subject_public_key_info(SubjectPublicKeyInfo::decode_ber(reader.next())?)
-                // TODO: add parsing of extensions
                 .build()
                 .map_err(|_|ASN1Error::new(ASN1ErrorKind::Invalid))
         })
     }
 }
-
-
 
 
 #[cfg(test)]

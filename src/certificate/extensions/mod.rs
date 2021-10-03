@@ -14,7 +14,10 @@ use yasna::{
     models::ObjectIdentifier,
 };
 
-#[derive(Clone)]
+#[cfg(feature = "tracing")]
+use tracing::{debug};
+
+#[derive(Clone, Debug, PartialEq,)]
 pub struct Extension {
     oid: ObjectIdentifier,
     critical: bool,
@@ -22,7 +25,10 @@ pub struct Extension {
 }
 
 impl BERDecodable for Extension {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "Extension::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing extension");
         reader.read_sequence(|reader| {
             let oid = reader.next().read_oid()?;
             let critical = reader.next().read_bool()?;

@@ -9,6 +9,10 @@ use yasna::{
     Tag
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
+
+
 
 #[derive(Clone, Debug, PartialEq,)]
 pub enum X509Version {
@@ -27,7 +31,10 @@ impl DEREncodable for X509Version {
 }
 
 impl BERDecodable for X509Version {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "X509Version::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing x.509 version");
         let ver = reader.read_tagged(Tag::context(0), |reader| {
             reader.read_u8()
         })?;

@@ -7,6 +7,8 @@ use yasna::{
     BERDecodable,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct Name {
@@ -14,7 +16,10 @@ pub struct Name {
 }
 
 impl BERDecodable for Name {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "Name::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing name");
         let rdn_sequence = reader.collect_sequence_of(|inner| {
             RelativeDistinguishedName::decode_ber(inner)
         })?;

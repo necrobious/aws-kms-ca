@@ -12,6 +12,9 @@ use yasna::{
     models::ObjectIdentifier,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
+
 /* TODO: we need implement more distingushed names: 
  * from:  https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.4
  * RFC5288 § 4.1.2.4:
@@ -83,7 +86,10 @@ impl RelativeDistinguishedName {
 }
 
 impl BERDecodable for RelativeDistinguishedName {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "RelativeDistinguishedName::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing relative distinguished name");
          
         //  RelativeDistinguishedName ::=
         //     SET SIZE (1..MAX) OF AttributeTypeAndValue
@@ -101,6 +107,8 @@ impl BERDecodable for RelativeDistinguishedName {
 
                 // cn
                 if oid == Ok(cn_oid) {
+                    #[cfg(feature = "tracing")]
+                    debug!("parsing common name");
                     let cn = atv.next().read_utf8string()?;
                     return Ok(AttributeTypeAndValue::CN(CommonName(cn))) 
                 }

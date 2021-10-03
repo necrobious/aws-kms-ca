@@ -9,6 +9,8 @@ use yasna::{
     BERDecodable,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct SubjectPublicKeyInfo {
@@ -18,7 +20,10 @@ pub struct SubjectPublicKeyInfo {
 
 
 impl BERDecodable for SubjectPublicKeyInfo {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "SubjectPublicKeyInfo::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing subject public key info");
         reader.read_sequence(|reader| {
             let algorithm = KeyAlgorithmIdentifier::decode_ber(reader.next())?;
             if algorithm == KeyAlgorithmIdentifier::P256 ||

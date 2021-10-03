@@ -9,12 +9,17 @@ use yasna::{
     BERDecodable,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct CommonName(pub String);
 
 impl BERDecodable for CommonName {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "CommonName::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing common name");
         reader.read_sequence(|reader| {
             let cn_oid = ObjectIdentifier::from_slice(&[2,5,4,3]);
             let oid = reader.next().read_oid()?;

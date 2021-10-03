@@ -8,6 +8,9 @@ use yasna::{
 
 use num_bigint::BigUint;
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
+
 #[derive(Clone, Debug, PartialEq,)]
 pub struct SerialNumber(pub BigUint);
 
@@ -24,7 +27,10 @@ impl DEREncodable for SerialNumber {
 }
 
 impl BERDecodable for SerialNumber {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "SerialNumber::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing serial number");
         let sn_biguint = reader.read_biguint()?;
         return Ok(SerialNumber(sn_biguint))
     }

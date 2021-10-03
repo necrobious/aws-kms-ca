@@ -21,7 +21,10 @@ use yasna::{
     BERDecodable,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
 
+#[derive(Clone, Debug, PartialEq,)]
 pub struct Certificate {
     pub tbs_certificate: ToBeSignedCertificate,
     pub signature_algorithm: SignatureAlgorithmIdentifier,
@@ -60,11 +63,19 @@ impl DEREncodable for Certificate {
 }
 
 impl BERDecodable for Certificate {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "Certificate::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing certificate");
         reader.read_sequence(|reader| {
             let tbs_certificate = ToBeSignedCertificate::decode_ber(reader.next())?; 
+
             let signature_algorithm = SignatureAlgorithmIdentifier::decode_ber(reader.next())?;
+
+            #[cfg(feature = "tracing")]
+            debug!("parsing signature");
             let (signature_value, _) = reader.next().read_bitvec_bytes()?; 
+
             return Ok(Certificate {
                 tbs_certificate: tbs_certificate,
                 signature_algorithm: signature_algorithm,

@@ -8,6 +8,8 @@ use yasna::{
     BERDecodable,
 };
 
+#[cfg(feature = "tracing")]
+use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct Validity {
@@ -17,7 +19,10 @@ pub struct Validity {
 
 
 impl BERDecodable for Validity {
+    #[cfg_attr(feature = "tracing", tracing::instrument(name = "Validity::decode_ber"))]
     fn decode_ber(reader: BERReader) -> ASN1Result<Self> {
+        #[cfg(feature = "tracing")]
+        debug!("parsing validity");
         reader.read_sequence(|reader| {
             let nb = *reader.next().read_utctime()?.datetime();
             let na = *reader.next().read_utctime()?.datetime();
