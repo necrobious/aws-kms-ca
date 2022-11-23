@@ -12,13 +12,13 @@ use std::net::IpAddr;
 // }
 const OID_CE_SUBJECT_ALT_NAME : &'static [u64] = &[2,5,29,17];
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GeneralName {
     DnsName(String),
     IpAddress(IpAddr),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SubjectAlternativeName(pub Vec<GeneralName>);
 
 impl From<SubjectAlternativeName> for Extension {

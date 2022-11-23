@@ -19,7 +19,10 @@ use crate::certificate::common_name::CommonName;
 use crate::certificate::subject_public_key_info::SubjectPublicKeyInfo;
 use crate::certificate::extensions::Extension;
 use std::convert::From;
-use chrono::prelude::*;
+use time::{
+    Duration,
+    OffsetDateTime
+};
 use bytes::Bytes;
 
 #[cfg(feature = "tracing")]
@@ -72,12 +75,10 @@ impl ToBeSignedCertificateBuilder {
         self
     }
 
-    pub fn valid_days(mut self, from: DateTime<Utc>, days_valid: i64) -> Self {
+    // depricate this soon
+    pub fn valid_days(mut self, from: OffsetDateTime, days_valid: i64) -> Self {
         self.validity =
-            match (
-                from.with_nanosecond(0),
-                from.checked_add_signed(chrono::Duration::days(days_valid))
-                    .and_then(|dt| dt.with_nanosecond(0))) {
+            match (Some(from.clone()), from.checked_add(Duration::days(days_valid))) {
                 (Some(nb),Some(na)) => Some(Validity {not_before: nb, not_after: na}),
                 _ => None
             };
@@ -253,6 +254,7 @@ impl BERDecodable for ToBeSignedCertificate {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use time::macros::datetime;
     use crate::certificate::relative_distinguished_name::RelativeDistinguishedName;
     use crate::certificate::common_name::CommonName;
     use crate::certificate::extensions::basic_constraints::BasicConstraints;
@@ -410,8 +412,8 @@ mod tests {
                 )
             },
             validity: Validity {
-                not_before: Utc.ymd(2020, 9, 9).and_hms(1, 46, 40),
-                not_after: Utc.ymd(2021, 9, 9).and_hms(1, 46, 40)
+                not_before: datetime!(2020-09-09 01:46:40 UTC),
+                not_after: datetime!(2021-09-09 01:46:40 UTC),
             },
             subject: Name {
                 rdn_sequence: vec!(

@@ -2,7 +2,7 @@ use yasna::models::ObjectIdentifier;
 use crate::certificate::extensions::Extension;
 use core::default::Default;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BasicConstraints {
     pub ca: bool,
     pub path_length_constraint: Option<usize>,

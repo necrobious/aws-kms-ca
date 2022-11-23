@@ -10,7 +10,7 @@ use crate::certificate::extensions::Extension;
 //  }
 const OID_CE_KEY_USAGE : &'static [u64] = &[2,5,29,15];
 
-#[derive(Clone,Ord,PartialOrd,Eq,PartialEq)]
+#[derive(Clone,Ord,PartialOrd,Eq,PartialEq,Debug)]
 pub enum KeyUsage {
     DigitalSignature,
     ContentCommitment,
@@ -22,7 +22,7 @@ pub enum KeyUsage {
     EncipherOnly,
     DecipherOnly,
 }
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct KeyUsages(pub Vec<KeyUsage>);
 
 impl From<KeyUsages> for Extension {

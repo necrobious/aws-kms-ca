@@ -94,7 +94,7 @@ const OID_KP_TIME_STAMPING : &'static [u64] = &[1,3,6,1,5,5,7,3,8];
 // }
 const OID_KP_OCSP_SIGNING : &'static [u64] = &[1,3,6,1,5,5,7,3,9];
 
-#[derive(Clone,Ord,PartialOrd,Eq,PartialEq)]
+#[derive(Clone,Ord,PartialOrd,Eq,PartialEq,Debug)]
 pub enum KeyPurpose {
     ServerAuth,
     ClientAuth,
@@ -118,7 +118,7 @@ impl From<KeyPurpose> for ObjectIdentifier {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct ExtendedKeyUsage(pub Vec<KeyPurpose>); // TODO must have at least one value
 
 impl From<ExtendedKeyUsage> for Extension {

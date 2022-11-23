@@ -1,5 +1,5 @@
 use yasna::models::UTCTime;
-use chrono::prelude::*;
+use time::OffsetDateTime;
 use yasna::{
     ASN1Result,
     DERWriter,
@@ -13,8 +13,8 @@ use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct Validity {
-    pub not_before: DateTime<Utc>,
-    pub not_after: DateTime<Utc>,
+    pub not_before: OffsetDateTime,
+    pub not_after: OffsetDateTime,
 }
 
 
@@ -38,8 +38,8 @@ impl BERDecodable for Validity {
 impl DEREncodable for Validity {
     fn encode_der(&self, writer: DERWriter) {
         writer.write_sequence(|writer| {
-            let nb = UTCTime::from_datetime(&self.not_before);
-            let na = UTCTime::from_datetime(&self.not_after);
+            let nb = UTCTime::from_datetime(self.not_before);
+            let na = UTCTime::from_datetime(self.not_after);
             writer.next().write_utctime(&nb);
             writer.next().write_utctime(&na);
         });
@@ -49,6 +49,7 @@ impl DEREncodable for Validity {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use time::macros::datetime;
     #[test]
     fn validity_should_decode_correctly () {
         let asserted = vec!(0x30,0x1e, // SEQUENCE, 30 bytes
@@ -68,8 +69,8 @@ mod tests {
                 0x34,0x36, // mm - 46 in ASCII
                 0x34,0x30, // ss - 40 in ASCII
                 0x5a);     // tz - Z
-        let then = Utc.ymd(2020, 9, 9).and_hms(1, 46, 40);
-        let when = Utc.ymd(2021, 9, 9).and_hms(1, 46, 40);
+        let then = datetime!(2020-09-09 01:46:40 UTC);
+        let when = datetime!(2021-09-09 01:46:40 UTC);
 
         let expected = Ok(Validity { not_before: then, not_after: when });
         let actual = yasna::parse_der(&asserted, Validity::decode_ber);
@@ -95,8 +96,8 @@ mod tests {
                 0x34,0x36, // mm - 46 in ASCII
                 0x34,0x30, // ss - 40 in ASCII
                 0x5a);     // tz - Z
-        let then = Utc.ymd(2020, 9, 9).and_hms(1, 46, 40);
-        let when = Utc.ymd(2021, 9, 9).and_hms(1, 46, 40);
+        let then = datetime!(2020-09-09 01:46:40 UTC); //Utc.ymd(2020, 9, 9).and_hms(1, 46, 40);
+        let when = datetime!(2021-09-09 01:46:40 UTC); //Utc.ymd(2021, 9, 9).and_hms(1, 46, 40);
 
         let validity = Validity { not_before: then, not_after: when };
         let der = yasna::encode_der(&validity);

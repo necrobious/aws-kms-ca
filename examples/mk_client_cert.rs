@@ -1,9 +1,5 @@
-use rusoto_core::region::Region;
-use rusoto_kms::{
-    SignRequest,
-    KmsClient,
-    Kms
-};
+use std::error::Error;
+use aws_sdk_kms as kms;
 use ring::{
     rand::{SystemRandom, SecureRandom},
     signature::{
@@ -33,132 +29,99 @@ use aws_kms_ca::certificate::extensions::{
     BasicConstraints,
     KeyPurpose,
     ExtendedKeyUsage,
-    SubjectAlternativeName,
-    GeneralName,
     SubjectKeyIdentifier,
     AuthorityKeyIdentifier,
 };
 use std::default::Default;
-use clap::{Arg, App};
-use std::str::FromStr;
+use clap::Parser;
+//use std::str::FromStr;
 use bytes::Bytes;
-use std::net::IpAddr;
-use std::error::Error;
-use chrono::prelude::*;
+use time::OffsetDateTime;
 use hex;
 
 const KMS_SIGNING_ALGORITHM_SHA_256: &'static str = "ECDSA_SHA_256";
 const KMS_SIGNING_ALGORITHM_SHA_384: &'static str = "ECDSA_SHA_384";
 
-fn is_aws_region (input:String) -> Result<(), String> {
-    Region::from_str(input.as_ref()).map(|_| ()).map_err(|e| e.to_string())
+fn auth_key_id_parser (input: &str) -> Result<AuthorityKeyIdentifier, String> {
+    hex::decode(input)
+        .map(AuthorityKeyIdentifier)
+        .map_err(|e| e.to_string())
 }
 
-fn is_number (input:String) -> Result<(), String> {
-    input.parse::<usize>().map(|_| ()).map_err(|e| e.to_string())
+fn signing_algorithm_parser (input: &str) -> Result<SignatureAlgorithmIdentifier, String> {
+    use SignatureAlgorithmIdentifier::*;
+    match input {
+        KMS_SIGNING_ALGORITHM_SHA_256 => Ok(EcdsaWithSha256),
+        KMS_SIGNING_ALGORITHM_SHA_384 => Ok(EcdsaWithSha384),
+        _ => Err(format!("Unsupported signing algorithm: {}", input)) 
+    }
 }
 
-fn is_hex (input:String) -> Result<(), String> {
-    hex::decode(input).map(|_| ()).map_err(|e| e.to_string())
+#[derive(Parser, Debug)]
+#[command(name = "mk_client_cert")]
+#[command(about = "Generate a new keypair, construct the to-be-signed binary output, suiable to send to the KMS CMK to self-sign.", long_about = None)]
+struct Cli {
+    #[arg(
+        long,
+        short = 'k',
+        value_name = "ARN",
+        required = true,
+        help = "Identifies the asymmetric CMK that includes the public key."
+    )]
+    key_id: String, 
+
+    #[arg(
+        long,
+        short = 'd',
+        value_name = "DAYS_VALID",
+        required = true,
+        value_parser = clap::value_parser!(usize), 
+        help = "Number of days the certificate should be valid for."
+    )]
+    days: usize,
+
+    #[arg(
+        long,
+        short = 'c',
+        value_name = "COMMON_NAME",
+        required = true,
+        help = "The Commanon Name of the subject."
+    )]
+    common_name: String, 
+
+    #[arg(
+        long,
+        short = 'a',
+        value_name = "HEX_DIGEST",
+        required = true,
+        value_parser = auth_key_id_parser,
+        help = "The hex string of the Authority Key ID."
+    )]
+    auth_key_id: AuthorityKeyIdentifier, 
+
+    #[arg(
+        long,
+        short = 's',
+        value_name = "KMS_SIGNING_ALGORITHM",
+        required = true,
+        value_parser = signing_algorithm_parser,
+        help = "The AWS KMS algorithm to use when sigining certificates. ECDSA_SHA_256, ECDSA_SHA_384"
+    )]
+    signing_algorithm: SignatureAlgorithmIdentifier,
 }
 
 #[tokio::main]
 async fn main () -> Result<(), Box<dyn Error>> {
     let sysrand = SystemRandom::new();
-    let matches = App::new("mk_client_cert")
-        .about("Generate a new keypair, construct the to-be-signed binary output, suiable to send to the KMS CMK to self-sign.")
-        .arg(Arg::with_name("key-id")
-             .short("k")
-             .long("key-id")
-             .value_name("ARN")
-             .help("Identifies the asymmetric CMK that includes the public key.")
-             .takes_value(true)
-             .required(true))
-        .arg(Arg::with_name("region")
-             .short("r")
-             .long("region")
-             .value_name("AWS_REGION")
-             .help("AWS region to connect to KMS")
-             .takes_value(true)
-             .required(true)
-             .validator(is_aws_region))
-         .arg(Arg::with_name("days")
-             .short("d")
-             .long("days")
-             .value_name("DAYS_VALID")
-             .help("Number of days the certificate should be valid for.")
-             .takes_value(true)
-             .required(true)
-             .validator(is_number))
-         .arg(Arg::with_name("common-name")
-             .short("c")
-             .long("common-name")
-             .value_name("COMMON_NAME")
-             .help("The Commanon Name of the subject")
-             .takes_value(true)
-             .required(true))
-         // Supplied seperate, in the event the same CMK is rotated and points to new keying material.
-         .arg(Arg::with_name("auth-key-id")
-             .long("auth-key-id")
-             .value_name("HEX_DIGEST")
-             .help("The hex string of the Authority Key ID.")
-             .takes_value(true)
-             .required(true)
-             .validator(is_hex))
-         .arg(Arg::with_name("signing-algorithm")
-             .long("signing-algorithm")
-             .help("The algorithm to use when sigining.")
-             .takes_value(true)
-             .required(true)
-             .possible_value(KMS_SIGNING_ALGORITHM_SHA_256)
-             .possible_value(KMS_SIGNING_ALGORITHM_SHA_384))
-         .get_matches();
-
-    let region = matches
-        .value_of("region")
-        .and_then(|r| Region::from_str(r).ok())
-        .unwrap();
-
-    let days = matches
-        .value_of("days")
-        .and_then(|d| d.parse::<usize>().ok() )
-        .unwrap();
-
-
-    let key_id = matches
-        .value_of("key-id")
-        .map(|k| k.to_string() )
-        .unwrap();
-
-    let akid = matches
-        .value_of("auth-key-id")
-        .ok_or("invalid authority key ID".to_string())
-        .and_then(|akid| hex::decode(akid.to_string()).map_err(|e| e.to_string()))
-        .unwrap();
-
-    let cn = matches
-        .value_of("common-name")
-        .map(|cn| CommonName(cn.to_string()) )
-        .unwrap();
-
-    let signature_algorithm = matches
-        .value_of("signing-algorithm")
-        .and_then(|signing_algorithm| {
-            use SignatureAlgorithmIdentifier::*;
-            match signing_algorithm {
-                KMS_SIGNING_ALGORITHM_SHA_256 => Some(EcdsaWithSha256),
-                KMS_SIGNING_ALGORITHM_SHA_384 => Some(EcdsaWithSha384),
-                _ => None
-            }
-        })
-        .unwrap();
+    let args = Cli::parse();
 
     // build random serial number
     let mut sn_bytes = [0u8;19];
     sysrand.fill(&mut sn_bytes).map_err(|_| "could not generate random serial number")?;
     let sn = SerialNumber::new(sn_bytes);
 
-    let kms_client = KmsClient::new(region);
+    let aws_env_config = aws_config::load_from_env().await;
+    let kms_client = kms::Client::new(&aws_env_config);
 
     let pkcs8_doc = EcdsaKeyPair::generate_pkcs8(&ECDSA_P384_SHA384_FIXED_SIGNING, &sysrand)
         .map_err(|e| e.to_string())?;
@@ -174,15 +137,18 @@ async fn main () -> Result<(), Box<dyn Error>> {
     let skid =
         digest(&SHA512_256, &spki.public_key[..]).as_ref().to_vec();
 
-    let now = Utc::now();
+    let now = OffsetDateTime::now_utc().replace_nanosecond(0) // any non-zero .nanosecond()
+        .map_err(|e| e.to_string())?;                         // OffsetDateTime value will cause
+                                                              // yasna's UTCTime from_datetime()
+                                                              // to fail and assert(panic)
 
-    let mut builder = ToBeSignedCertificate::builder()
+    let builder = ToBeSignedCertificate::builder()
         .version(X509Version::V3)
         .serial(sn)
-        .signature_algorithm(signature_algorithm)
-        .issuer_cn(CommonName(key_id.clone()))
-        .valid_days(now, days as i64)
-        .subject_cn(cn)
+        .signature_algorithm(args.signing_algorithm)
+        .issuer_cn(CommonName(args.key_id.clone()))
+        .valid_days(now, args.days as i64)
+        .subject_cn(CommonName(args.common_name))
         .subject_public_key_info(spki) // key algo implicitly sets signature_algorithm if unset
         .extension(Extension::from(BasicConstraints::default()))
         .extension(Extension::from(KeyUsages(vec!(
@@ -194,33 +160,32 @@ async fn main () -> Result<(), Box<dyn Error>> {
         .extension(Extension::from(SubjectKeyIdentifier(
             skid
         )))
-        .extension(Extension::from(AuthorityKeyIdentifier(
-            akid
-        )));
+        .extension(Extension::from(args.auth_key_id)); //AuthorityKeyIdentifier
 
     let tbs_cert = builder.build()?;
 
     let signature_algorithm = tbs_cert.signature_algorithm.clone();
 
-    let sign_request = SignRequest {
-        key_id: key_id.clone(),
-        message: Bytes::from(tbs_cert.clone()),
-        message_type: Some("RAW".to_string()),
-        signing_algorithm: {
+    let kms_sign_resp = kms_client
+        .sign()
+        .key_id(args.key_id.clone())
+        .message(kms::types::Blob::new(Bytes::from(tbs_cert.clone())))
+        .message_type(kms::model::MessageType::Raw)
+        .signing_algorithm({
             use SignatureAlgorithmIdentifier::*;
+            use kms::model::SigningAlgorithmSpec::*; 
             match signature_algorithm {
-                EcdsaWithSha256 => KMS_SIGNING_ALGORITHM_SHA_256,
-                EcdsaWithSha384 => KMS_SIGNING_ALGORITHM_SHA_384,
-            }.to_string()
-        },
-        ..Default::default()
-    };
+                EcdsaWithSha256 => EcdsaSha256,
+                EcdsaWithSha384 => EcdsaSha384,
+            }
+        })
+        .send()
+        .await?;
 
-    let signature =
-        kms_client.sign(sign_request).await
-            .map_err(|e| e.to_string())
-            .and_then(|sign_response|
-                sign_response.signature.ok_or("signature unavailable!".to_string()))?;
+    let signature = kms_sign_resp
+        .signature()
+        .ok_or("signature unavailable!".to_string())
+        .map(|blob| Bytes::copy_from_slice(blob.as_ref()))?;
 
     let cert = Certificate {
         tbs_certificate: tbs_cert,
@@ -248,4 +213,5 @@ async fn main () -> Result<(), Box<dyn Error>> {
     println!("-----END CERTIFICATE-----");
 
     Ok(())
+
 }

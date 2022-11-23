@@ -2,7 +2,7 @@ use yasna::Tag;
 use yasna::models::ObjectIdentifier;
 use crate::certificate::extensions::Extension;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AuthorityKeyIdentifier(pub Vec<u8>);
 
 impl From<AuthorityKeyIdentifier> for Extension {

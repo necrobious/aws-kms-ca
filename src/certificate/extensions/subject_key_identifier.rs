@@ -1,7 +1,7 @@
 use yasna::models::ObjectIdentifier;
 use crate::certificate::extensions::Extension;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct SubjectKeyIdentifier(pub Vec<u8>);
 
 impl From<SubjectKeyIdentifier> for Extension {
