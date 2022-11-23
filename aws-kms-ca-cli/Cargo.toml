@@ -1,0 +1,36 @@
+[package]
+name = "aws-kms-ca-cli"
+version = "0.2.0"
+authors = ["Kirk Peterson <necrobious@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+ring = "0.16"
+tokio = { version = "1.0", features = [ "full" ] } 
+clap = { version = "4.0.26", features = ["derive"] }
+aws-config = { version = "0.51.0" }
+aws-sdk-kms = { version = "0.21.0" }
+base64 = "0.13"
+hex = "0.4.3"
+aws-kms-ca-x509 = { path = "../aws-kms-ca-x509" }
+time = { version = "0.3", features = ["macros"]}
+bytes = { version = "1" }
+
+[features]
+default = []
+
+[[bin]]
+name = "mk_ca_cert"
+path = "src/mk_ca_cert.rs"
+
+[[bin]]
+name = "mk_server_cert"
+path = "src/mk_server_cert.rs"
+
+[[bin]]
+name = "mk_client_cert"
+path = "src/mk_client_cert.rs"
+
+[[bin]]
+name = "get_cmk_pkey"
+path = "src/get_cmk_pkey.rs"

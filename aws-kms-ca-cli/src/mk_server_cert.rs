@@ -12,7 +12,7 @@ use ring::{
         SHA512_256
     },
 };
-use aws_kms_ca::certificate::{
+use aws_kms_ca_x509::certificate::{
     X509Version,
     SerialNumber,
     SubjectPublicKeyInfo,
@@ -22,7 +22,7 @@ use aws_kms_ca::certificate::{
     SignatureAlgorithmIdentifier,
     Certificate,
 };
-use aws_kms_ca::certificate::extensions::{
+use aws_kms_ca_x509::certificate::extensions::{
     Extension,
     KeyUsage,
     KeyUsages,

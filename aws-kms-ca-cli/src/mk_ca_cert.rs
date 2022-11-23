@@ -4,11 +4,11 @@ use clap::Parser;
 use bytes::Bytes;
 use ring::rand::{SystemRandom, SecureRandom};
 use ring::digest::{digest, SHA512_256};
-use aws_kms_ca::certificate::x509_version::X509Version;
-use aws_kms_ca::certificate::serial_number::SerialNumber;
-use aws_kms_ca::certificate::signature_algorithm_identifier::SignatureAlgorithmIdentifier;
-use aws_kms_ca::certificate::subject_public_key_info::SubjectPublicKeyInfo;
-use aws_kms_ca::certificate::extensions::{
+use aws_kms_ca_x509::certificate::x509_version::X509Version;
+use aws_kms_ca_x509::certificate::serial_number::SerialNumber;
+use aws_kms_ca_x509::certificate::signature_algorithm_identifier::SignatureAlgorithmIdentifier;
+use aws_kms_ca_x509::certificate::subject_public_key_info::SubjectPublicKeyInfo;
+use aws_kms_ca_x509::certificate::extensions::{
     Extension,
     KeyUsage,
     KeyUsages,
@@ -17,10 +17,10 @@ use aws_kms_ca::certificate::extensions::{
     AuthorityKeyIdentifier,
 };
 
-use aws_kms_ca::certificate::key_algorithm_identifier::KeyAlgorithmIdentifier;
-use aws_kms_ca::certificate::common_name::CommonName;
-use aws_kms_ca::certificate::to_be_signed_certificate::ToBeSignedCertificate;
-use aws_kms_ca::certificate::Certificate;
+use aws_kms_ca_x509::certificate::key_algorithm_identifier::KeyAlgorithmIdentifier;
+use aws_kms_ca_x509::certificate::common_name::CommonName;
+use aws_kms_ca_x509::certificate::to_be_signed_certificate::ToBeSignedCertificate;
+use aws_kms_ca_x509::certificate::Certificate;
 use time::OffsetDateTime;
 use std::error::Error;
 
