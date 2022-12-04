@@ -31,8 +31,14 @@ pub struct Certificate {
     pub signature_value: Bytes,
 }
 
+impl From<&Certificate> for Bytes {
+    fn from(cert: &Certificate) -> Bytes {
+        Bytes::from(yasna::encode_der(cert))
+    }
+}
+
 impl From<Certificate> for Bytes {
-    fn from(cert:Certificate) -> Bytes {
+    fn from(cert: Certificate) -> Bytes {
         Bytes::from(yasna::encode_der(&cert))
     }
 }

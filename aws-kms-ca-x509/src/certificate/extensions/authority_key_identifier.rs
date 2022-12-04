@@ -5,6 +5,25 @@ use crate::certificate::extensions::Extension;
 #[derive(Clone, Debug)]
 pub struct AuthorityKeyIdentifier(pub Vec<u8>);
 
+impl From<Vec<u8>> for AuthorityKeyIdentifier {
+    fn from(aki: Vec<u8>) -> AuthorityKeyIdentifier {
+        AuthorityKeyIdentifier(aki)
+    }
+}
+
+impl From<&[u8]> for AuthorityKeyIdentifier {
+    fn from(aki: &[u8]) -> AuthorityKeyIdentifier {
+        AuthorityKeyIdentifier(aki.to_vec())
+    }
+}
+
+impl From<&AuthorityKeyIdentifier> for AuthorityKeyIdentifier {
+    fn from(aki: &AuthorityKeyIdentifier) -> AuthorityKeyIdentifier {
+        aki.clone()
+    }
+}
+
+
 impl From<AuthorityKeyIdentifier> for Extension {
     fn from(aki:AuthorityKeyIdentifier) -> Self {
         // OID: 2.5.29.35

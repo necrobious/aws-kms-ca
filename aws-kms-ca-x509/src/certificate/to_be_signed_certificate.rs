@@ -46,8 +46,8 @@ impl ToBeSignedCertificateBuilder {
         self
     }
 
-    pub fn serial(mut self, serial: SerialNumber) -> Self {
-        self.serial = Some(serial);
+    pub fn serial(mut self, serial: impl Into<SerialNumber>) -> Self {
+        self.serial = Some(serial.into().clone());
         self
     }
 
@@ -61,9 +61,9 @@ impl ToBeSignedCertificateBuilder {
         self
     }
 
-    pub fn issuer_cn(mut self, issuer: CommonName) -> Self {
+    pub fn issuer_cn(mut self, issuer: impl Into<CommonName>) -> Self {
         self.issuer = Some(Name { rdn_sequence: vec!( RelativeDistinguishedName {
-            common_name: issuer
+            common_name: issuer.into().clone()
         })});
         self
     }
@@ -90,23 +90,24 @@ impl ToBeSignedCertificateBuilder {
         self
     }
 
-    pub fn subject_cn(mut self, subject: CommonName) -> Self {
+    pub fn subject_cn(mut self, subject: impl Into<CommonName>) -> Self {
         self.subject = Some(Name { rdn_sequence: vec!( RelativeDistinguishedName {
-            common_name: subject
+            common_name: subject.into().clone()
         })});
         self
     }
 
-    pub fn subject_public_key_info(mut self, subject_public_key_info: SubjectPublicKeyInfo) -> Self {
+    pub fn subject_public_key_info(mut self, subject_public_key_info: impl Into<SubjectPublicKeyInfo>) -> Self {
+        let spki = subject_public_key_info.into();
         if self.signature_algorithm.is_none() {
-            self.signature_algorithm = match subject_public_key_info.algorithm {
+            self.signature_algorithm = match spki.algorithm {
                 KeyAlgorithmIdentifier::P256 =>
                     Some(SignatureAlgorithmIdentifier::EcdsaWithSha256),
                 KeyAlgorithmIdentifier::P384 =>
                     Some(SignatureAlgorithmIdentifier::EcdsaWithSha384),
             }
         }
-        self.subject_public_key_info = Some(subject_public_key_info);
+        self.subject_public_key_info = Some(spki);
         self
     }
 
@@ -161,6 +162,12 @@ pub struct ToBeSignedCertificate {
     pub subject: Name,
     pub subject_public_key_info: SubjectPublicKeyInfo,
     pub extensions: Vec<Extension>,
+}
+
+impl From<&ToBeSignedCertificate> for Bytes {
+    fn from(tbs:&ToBeSignedCertificate) -> Bytes {
+        Bytes::from(yasna::encode_der(tbs))
+    }
 }
 
 impl From<ToBeSignedCertificate> for Bytes {

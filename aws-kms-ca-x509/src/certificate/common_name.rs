@@ -49,6 +49,32 @@ impl DEREncodable for CommonName {
     }
 }
 
+impl From<&String> for CommonName {
+    fn from(s: &String) -> CommonName {
+        CommonName(s.clone())
+    }
+}
+
+
+impl From<String> for CommonName {
+    fn from(s: String) -> CommonName {
+        CommonName(s)
+    }
+}
+
+impl From<&str> for CommonName {
+    fn from(s: &str) -> CommonName {
+        CommonName(s.to_string())
+    }
+}
+
+
+impl From<&CommonName> for CommonName {
+    fn from(cn: &CommonName) -> CommonName {
+        cn.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

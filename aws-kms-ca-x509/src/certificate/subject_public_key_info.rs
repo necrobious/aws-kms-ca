@@ -18,6 +18,11 @@ pub struct SubjectPublicKeyInfo {
     pub public_key: Vec<u8>,
 }
 
+impl From<&SubjectPublicKeyInfo> for SubjectPublicKeyInfo {
+    fn from(spki: &SubjectPublicKeyInfo) -> SubjectPublicKeyInfo {
+        spki.clone()
+    }
+}
 
 impl BERDecodable for SubjectPublicKeyInfo {
     #[cfg_attr(feature = "tracing", tracing::instrument(name = "SubjectPublicKeyInfo::decode_ber"))]

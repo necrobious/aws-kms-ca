@@ -181,13 +181,15 @@ async fn main () -> Result<(), Box<dyn Error>> {
                                                               // yasna's UTCTime from_datetime()
                                                               // to fail and assert(panic)
 
+    let iss_cn = CommonName(args.key_id.clone());
+    let sub_cn = CommonName(args.common_name);
     let mut builder = ToBeSignedCertificate::builder()
         .version(X509Version::V3)
         .serial(sn)
         .signature_algorithm(args.signing_algorithm)
-        .issuer_cn(CommonName(args.key_id.clone()))
+        .issuer_cn(&iss_cn)
         .valid_days(now, args.days as i64)
-        .subject_cn(CommonName(args.common_name))
+        .subject_cn(&sub_cn)
         .subject_public_key_info(spki) // key algo implicitly sets signature_algorithm if unset
         .extension(Extension::from(BasicConstraints::default()))
         .extension(Extension::from(KeyUsages(vec!(

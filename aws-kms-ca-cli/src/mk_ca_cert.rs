@@ -135,12 +135,13 @@ async fn main () -> Result<(), Box<dyn Error>> {
         .as_ref()
         .to_vec();
 
+    let cn = CommonName(args.key_id.clone());
     let tbs_cert = ToBeSignedCertificate::builder()
         .version(X509Version::V3)
         .serial(sn)
         .valid_days(now, args.days as i64)
-        .issuer_cn(CommonName(args.key_id.clone()))
-        .subject_cn(CommonName(args.key_id.clone()))
+        .issuer_cn(&cn)
+        .subject_cn(&cn)
         .subject_public_key_info(spki)
         .extension(Extension::from(BasicConstraints{
             ca: true,

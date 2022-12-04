@@ -25,6 +25,26 @@ impl From<SubjectKeyIdentifier> for Extension {
     }
 }
 
+impl From<Vec<u8>> for SubjectKeyIdentifier {
+    fn from(ski: Vec<u8>) -> SubjectKeyIdentifier {
+        SubjectKeyIdentifier(ski)
+    }
+}
+
+impl From<&[u8]> for SubjectKeyIdentifier {
+    fn from(ski: &[u8]) -> SubjectKeyIdentifier {
+        SubjectKeyIdentifier(ski.to_vec())
+    }
+}
+
+impl From<&SubjectKeyIdentifier> for SubjectKeyIdentifier {
+    fn from(ski: &SubjectKeyIdentifier) -> SubjectKeyIdentifier {
+        ski.clone()
+    }
+}
+
+
+
 #[cfg(test)]
 mod tests {
     use super::*;

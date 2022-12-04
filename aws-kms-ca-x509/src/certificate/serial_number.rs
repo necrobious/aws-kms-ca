@@ -36,6 +36,23 @@ impl BERDecodable for SerialNumber {
     }
 }
 
+impl From<[u8;19]> for SerialNumber {
+    fn from(bytes: [u8;19]) -> SerialNumber {
+        SerialNumber(BigUint::from_bytes_be(&bytes))
+    }
+} 
+
+impl From<&SerialNumber> for SerialNumber {
+    fn from(sn: &SerialNumber) -> SerialNumber {
+        sn.clone()
+    }
+}
+//impl Into<SerialNumber> for [u8;19] {
+//    fn into(self) -> SerialNumber {
+//        SerialNumber(BigUint::from_bytes_be(&self))
+//    }
+//}
+
 
 #[cfg(test)]
 mod tests {
