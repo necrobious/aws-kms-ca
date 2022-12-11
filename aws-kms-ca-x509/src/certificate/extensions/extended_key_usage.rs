@@ -8,7 +8,7 @@ use crate::certificate::extensions::Extension;
 //      certificateExtension(29)
 //      extKeyUsage(37)
 // }
-const OID_CE_EXT_KEY_USAGE : &'static [u64] = &[2,5,29,37];
+pub const OID_CE_EXT_KEY_USAGE : &'static [u64] = &[2,5,29,37];
 
 // OID: 1.3.6.1.5.5.7.3.1
 // {
@@ -22,7 +22,7 @@ const OID_CE_EXT_KEY_USAGE : &'static [u64] = &[2,5,29,37];
 //      kp(3)
 //      id-kp-serverAuth(1)
 // }
-const OID_KP_SERVER_AUTH : &'static [u64] = &[1,3,6,1,5,5,7,3,1];
+pub const OID_KP_SERVER_AUTH : &'static [u64] = &[1,3,6,1,5,5,7,3,1];
 
 // OID: 1.3.6.1.5.5.7.3.2
 // {
@@ -36,7 +36,7 @@ const OID_KP_SERVER_AUTH : &'static [u64] = &[1,3,6,1,5,5,7,3,1];
 //      kp(3)
 //      id-kp-clientAuth(2)
 // }
-const OID_KP_CLIENT_AUTH : &'static [u64] = &[1,3,6,1,5,5,7,3,2];
+pub const OID_KP_CLIENT_AUTH : &'static [u64] = &[1,3,6,1,5,5,7,3,2];
 
 // OID: 1.3.6.1.5.5.7.3.3
 // {
@@ -50,7 +50,7 @@ const OID_KP_CLIENT_AUTH : &'static [u64] = &[1,3,6,1,5,5,7,3,2];
 //      kp(3)
 //      id-kp-codeSigning(3)
 // }
-const OID_KP_CODE_SIGNING : &'static [u64] = &[1,3,6,1,5,5,7,3,3];
+pub const OID_KP_CODE_SIGNING : &'static [u64] = &[1,3,6,1,5,5,7,3,3];
 
 // OID: 1.3.6.1.5.5.7.3.4
 // {
@@ -64,7 +64,7 @@ const OID_KP_CODE_SIGNING : &'static [u64] = &[1,3,6,1,5,5,7,3,3];
 //      kp(3)
 //      id-kp-emailProtection(4)
 // }
-const OID_KP_EMAIL_PROTECTION : &'static [u64] = &[1,3,6,1,5,5,7,3,4];
+pub const OID_KP_EMAIL_PROTECTION : &'static [u64] = &[1,3,6,1,5,5,7,3,4];
 
 // OID: 1.3.6.1.5.5.7.3.8
 // {
@@ -78,7 +78,7 @@ const OID_KP_EMAIL_PROTECTION : &'static [u64] = &[1,3,6,1,5,5,7,3,4];
 //      kp(3)
 //      id-kp-timeStamping(8)
 // }
-const OID_KP_TIME_STAMPING : &'static [u64] = &[1,3,6,1,5,5,7,3,8];
+pub const OID_KP_TIME_STAMPING : &'static [u64] = &[1,3,6,1,5,5,7,3,8];
 
 // OID: 1.3.6.1.5.5.7.3.9
 // {
@@ -92,7 +92,7 @@ const OID_KP_TIME_STAMPING : &'static [u64] = &[1,3,6,1,5,5,7,3,8];
 //      kp(3)
 //      id-kp-OCSPSigning(9)
 // }
-const OID_KP_OCSP_SIGNING : &'static [u64] = &[1,3,6,1,5,5,7,3,9];
+pub const OID_KP_OCSP_SIGNING : &'static [u64] = &[1,3,6,1,5,5,7,3,9];
 
 #[derive(Clone,Ord,PartialOrd,Eq,PartialEq,Debug)]
 pub enum KeyPurpose {
@@ -173,8 +173,11 @@ mod tests {
                         0x2b,0x06,0x01,0x05, // encoding of OID: 1.3.6.1.5.5.7.3.2
                         0x05,0x07,0x03,0x02);
         let eku = ExtendedKeyUsage(vec!(KeyPurpose::ClientAuth));
-        let der = yasna::encode_der(&Extension::from(eku));
 
+        let ext = Extension::from(eku);
+        assert!(ext.is_extended_key_usage());
+
+        let der = yasna::encode_der(&ext);
         assert_eq!(der, expected);
     }
 

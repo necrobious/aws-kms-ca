@@ -2,6 +2,15 @@ use yasna::Tag;
 use yasna::models::ObjectIdentifier;
 use crate::certificate::extensions::Extension;
 
+// OID: 2.5.29.35
+// {
+//      joint-iso-itu-t(2)
+//      ds(5)
+//      certificateExtension(29)
+//      authorityKeyIdentifier(35)
+//  }
+pub const OID_CE_AUTH_KEY_ID : &'static [u64] = &[2,5,29,35];
+
 #[derive(Clone, Debug)]
 pub struct AuthorityKeyIdentifier(pub Vec<u8>);
 
@@ -26,14 +35,7 @@ impl From<&AuthorityKeyIdentifier> for AuthorityKeyIdentifier {
 
 impl From<AuthorityKeyIdentifier> for Extension {
     fn from(aki:AuthorityKeyIdentifier) -> Self {
-        // OID: 2.5.29.35
-        // {
-        //      joint-iso-itu-t(2)
-        //      ds(5)
-        //      certificateExtension(29)
-        //      authorityKeyIdentifier(35)
-        //  }
-        let extension_oid = ObjectIdentifier::from_slice(&[2,5,29,35]);
+        let extension_oid = ObjectIdentifier::from_slice(OID_CE_AUTH_KEY_ID);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_sequence(|writer| {
                 writer.next().write_tagged_implicit(Tag::context(0), |writer| {
@@ -75,8 +77,12 @@ mod tests {
         );
 
         let aki = AuthorityKeyIdentifier(sha256);
-        let der = yasna::encode_der(&Extension::from(aki));
 
+
+        let ext = Extension::from(aki);
+        assert!(ext.is_authority_key_identifier());
+
+        let der = yasna::encode_der(&ext);
         assert_eq!(der, expected);
     }
 }

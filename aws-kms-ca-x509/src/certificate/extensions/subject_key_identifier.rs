@@ -1,19 +1,21 @@
 use yasna::models::ObjectIdentifier;
 use crate::certificate::extensions::Extension;
 
+// OID: 2.5.29.14
+// {
+//      joint-iso-itu-t(2)
+//      ds(5)
+//      certificateExtension(29)
+//      subjectKeyIdentifier(14)
+//  }
+pub const OID_CE_SUB_KEY_ID : &'static [u64] = &[2,5,29,14];
+
 #[derive(Clone,Debug)]
 pub struct SubjectKeyIdentifier(pub Vec<u8>);
 
 impl From<SubjectKeyIdentifier> for Extension {
     fn from(ski:SubjectKeyIdentifier) -> Self {
-        // OID: 2.5.29.14
-        // {
-        //      joint-iso-itu-t(2)
-        //      ds(5)
-        //      certificateExtension(29)
-        //      subjectKeyIdentifier(14)
-        //  }
-        let extension_oid = ObjectIdentifier::from_slice(&[2,5,29,14]);
+        let extension_oid = ObjectIdentifier::from_slice(OID_CE_SUB_KEY_ID);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_bytes(&ski.0);
         });
@@ -71,8 +73,11 @@ mod tests {
         );
 
         let ski = SubjectKeyIdentifier(sha256);
-        let der = yasna::encode_der(&Extension::from(ski));
 
+        let ext = Extension::from(ski);
+        assert!(ext.is_subject_key_identifier());
+
+        let der = yasna::encode_der(&ext);
         assert_eq!(der, expected);
     }
 }

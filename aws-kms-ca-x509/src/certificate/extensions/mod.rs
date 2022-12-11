@@ -51,6 +51,31 @@ impl DEREncodable for Extension {
         });
     }
 }
+impl Extension {
+    pub fn is_basic_constraints(&self) -> bool {
+        self.oid == ObjectIdentifier::from_slice(basic_constraints::OID_CE_BASIC_CONST)
+    }
+
+    pub fn is_key_usage(&self) -> bool {
+        self.oid == ObjectIdentifier::from_slice(key_usage::OID_CE_KEY_USAGE)
+    }
+
+    pub fn is_authority_key_identifier(&self) -> bool {
+        self.oid == ObjectIdentifier::from_slice(authority_key_identifier::OID_CE_AUTH_KEY_ID)
+    }
+
+    pub fn is_subject_key_identifier(&self) -> bool {
+        self.oid == ObjectIdentifier::from_slice(subject_key_identifier::OID_CE_SUB_KEY_ID)
+    }
+
+    pub fn is_extended_key_usage(&self) -> bool {
+        self.oid == ObjectIdentifier::from_slice(extended_key_usage::OID_CE_EXT_KEY_USAGE)
+    }
+
+    pub fn is_subject_alternative_name(&self) -> bool {
+        self.oid == ObjectIdentifier::from_slice(subject_alternative_name::OID_CE_SUBJECT_ALT_NAME)
+    }
+}
 
 pub use basic_constraints::*;
 pub use key_usage::*;

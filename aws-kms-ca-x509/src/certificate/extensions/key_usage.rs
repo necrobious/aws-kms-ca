@@ -8,7 +8,7 @@ use crate::certificate::extensions::Extension;
 //      certificateExtension(29)
 //      keyUsage(15)
 //  }
-const OID_CE_KEY_USAGE : &'static [u64] = &[2,5,29,15];
+pub const OID_CE_KEY_USAGE : &'static [u64] = &[2,5,29,15];
 
 #[derive(Clone,Ord,PartialOrd,Eq,PartialEq,Debug)]
 pub enum KeyUsage {
@@ -164,8 +164,11 @@ mod tests {
         let ku = KeyUsages(vec!(
             KeyUsage::DecipherOnly,
         ));
-        let der = yasna::encode_der(&Extension::from(ku));
 
+        let ext = Extension::from(ku);
+        assert!(ext.is_key_usage());
+
+        let der = yasna::encode_der(&ext);
         assert_eq!(der, expected);
     }
 }

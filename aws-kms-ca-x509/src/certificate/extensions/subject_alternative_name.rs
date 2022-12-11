@@ -10,7 +10,7 @@ use std::net::IpAddr;
 //      certificateExtension(29)
 //      subjectAltName(17)
 // }
-const OID_CE_SUBJECT_ALT_NAME : &'static [u64] = &[2,5,29,17];
+pub const OID_CE_SUBJECT_ALT_NAME : &'static [u64] = &[2,5,29,17];
 
 #[derive(Clone, Debug)]
 pub enum GeneralName {
@@ -117,8 +117,11 @@ mod tests {
         );
         //    [48, 18, 6, 3, 85, 29, 17, 1, 1, 0, 4, 8, 48, 6, 130, 4, 116, 101, 115, 116]
         let san = SubjectAlternativeName(vec!(GeneralName::IpAddress(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1)))));
-        let der = yasna::encode_der(&Extension::from(san));
 
+        let ext = Extension::from(san);
+        assert!(ext.is_subject_alternative_name());
+
+        let der = yasna::encode_der(&ext);
         assert_eq!(der, expected);
     }
 

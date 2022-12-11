@@ -2,6 +2,15 @@ use yasna::models::ObjectIdentifier;
 use crate::certificate::extensions::Extension;
 use core::default::Default;
 
+// OID: 2.5.29.19
+// {
+//      joint-iso-itu-t(2)
+//      ds(5)
+//      certificateExtension(29)
+//      basicConstraints(19)
+//  }
+pub const OID_CE_BASIC_CONST : &'static [u64] = &[2,5,29,19];
+
 #[derive(Clone, Debug)]
 pub struct BasicConstraints {
     pub ca: bool,
@@ -19,14 +28,7 @@ impl Default for BasicConstraints {
 
 impl From<BasicConstraints> for Extension {
     fn from(bc:BasicConstraints) -> Self {
-        // OID: 2.5.29.19
-        // {
-        //      joint-iso-itu-t(2)
-        //      ds(5)
-        //      certificateExtension(29)
-        //      basicConstraints(19)
-        //  }
-        let extension_oid = ObjectIdentifier::from_slice(&[2,5,29,19]);
+        let extension_oid = ObjectIdentifier::from_slice(OID_CE_BASIC_CONST);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_sequence(|writer| {
                 writer.next().write_bool(bc.ca);
@@ -67,8 +69,10 @@ mod tests {
             path_length_constraint: Some(1),
         };
 
-        let der = yasna::encode_der(&Extension::from(bc));
+        let ext = Extension::from(bc);
+        assert!(ext.is_basic_constraints());
 
+        let der = yasna::encode_der(&ext);
         assert_eq!(der, expected);
     }
 }
