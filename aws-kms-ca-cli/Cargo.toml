@@ -15,6 +15,7 @@ hex = "0.4.3"
 aws-kms-ca-x509 = { path = "../aws-kms-ca-x509" }
 time = { version = "0.3", features = ["macros"]}
 bytes = { version = "1" }
+regex = "1.7.0"
 
 [features]
 default = []
@@ -34,3 +35,7 @@ path = "src/mk_client_cert.rs"
 [[bin]]
 name = "get_cmk_pkey"
 path = "src/get_cmk_pkey.rs"
+
+[[bin]]
+name = "validate_ca_cert"
+path = "src/validate_ca_cert.rs"
