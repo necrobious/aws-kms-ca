@@ -19,9 +19,9 @@ use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct Extension {
-    oid: ObjectIdentifier,
-    critical: bool,
-    value: Vec<u8>,
+    pub oid: ObjectIdentifier,
+    pub critical: bool,
+    pub value: Vec<u8>,
 }
 
 impl BERDecodable for Extension {

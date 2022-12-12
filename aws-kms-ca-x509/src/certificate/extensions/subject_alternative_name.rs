@@ -23,10 +23,16 @@ pub struct SubjectAlternativeName(pub Vec<GeneralName>);
 
 impl From<SubjectAlternativeName> for Extension {
     fn from (san:SubjectAlternativeName) -> Self {
+        Extension::from(&san)
+    }
+}
+
+impl From<&SubjectAlternativeName> for Extension {
+    fn from (san:&SubjectAlternativeName) -> Self {
         let extension_oid = ObjectIdentifier::from_slice(OID_CE_SUBJECT_ALT_NAME);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_sequence(|writer| {
-                for name in san.0 {
+                for name in &san.0 {
                     match name {
                         GeneralName::DnsName(dns_name) => {
                             writer.next().write_tagged_implicit(Tag::context(2), |writer| {

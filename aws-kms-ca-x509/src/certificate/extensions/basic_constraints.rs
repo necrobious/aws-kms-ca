@@ -28,6 +28,12 @@ impl Default for BasicConstraints {
 
 impl From<BasicConstraints> for Extension {
     fn from(bc:BasicConstraints) -> Self {
+        Extension::from(&bc)
+    }
+}
+
+impl From<&BasicConstraints> for Extension {
+    fn from(bc:&BasicConstraints) -> Self {
         let extension_oid = ObjectIdentifier::from_slice(OID_CE_BASIC_CONST);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_sequence(|writer| {

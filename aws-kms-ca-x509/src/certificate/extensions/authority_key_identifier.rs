@@ -32,9 +32,8 @@ impl From<&AuthorityKeyIdentifier> for AuthorityKeyIdentifier {
     }
 }
 
-
-impl From<AuthorityKeyIdentifier> for Extension {
-    fn from(aki:AuthorityKeyIdentifier) -> Self {
+impl From<&AuthorityKeyIdentifier> for Extension {
+    fn from(aki:&AuthorityKeyIdentifier) -> Self {
         let extension_oid = ObjectIdentifier::from_slice(OID_CE_AUTH_KEY_ID);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_sequence(|writer| {
@@ -48,6 +47,12 @@ impl From<AuthorityKeyIdentifier> for Extension {
             critical: false,
             value: extension_value,
         }
+    }
+}
+
+impl From<AuthorityKeyIdentifier> for Extension {
+    fn from(aki:AuthorityKeyIdentifier) -> Self {
+        Extension::from(&aki)
     }
 }
 

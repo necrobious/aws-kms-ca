@@ -27,6 +27,12 @@ pub struct KeyUsages(pub Vec<KeyUsage>);
 
 impl From<KeyUsages> for Extension {
     fn from(ku:KeyUsages) -> Self {
+        Extension::from(&ku)
+    }
+}
+
+impl From<&KeyUsages> for Extension {
+    fn from(ku:&KeyUsages) -> Self {
         use KeyUsage::*;
         let extension_oid = ObjectIdentifier::from_slice(OID_CE_KEY_USAGE);
         let extension_value = yasna::construct_der(|writer| {

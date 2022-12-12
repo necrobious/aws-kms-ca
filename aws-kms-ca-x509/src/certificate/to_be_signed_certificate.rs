@@ -30,14 +30,14 @@ use tracing::{debug};
 
 #[derive(Clone, Debug, PartialEq,)]
 pub struct ToBeSignedCertificateBuilder {
-    version: Option<X509Version>,
-    serial: Option<SerialNumber>,
-    signature_algorithm: Option<SignatureAlgorithmIdentifier>,
-    issuer: Option<Name>,
-    validity: Option<Validity>,
-    subject: Option<Name>,
-    subject_public_key_info: Option<SubjectPublicKeyInfo>,
-    extensions: Vec<Extension>,
+    pub version: Option<X509Version>,
+    pub serial: Option<SerialNumber>,
+    pub signature_algorithm: Option<SignatureAlgorithmIdentifier>,
+    pub issuer: Option<Name>,
+    pub validity: Option<Validity>,
+    pub subject: Option<Name>,
+    pub subject_public_key_info: Option<SubjectPublicKeyInfo>,
+    pub extensions: Vec<Extension>,
 }
 
 impl ToBeSignedCertificateBuilder {

@@ -15,6 +15,12 @@ pub struct SubjectKeyIdentifier(pub Vec<u8>);
 
 impl From<SubjectKeyIdentifier> for Extension {
     fn from(ski:SubjectKeyIdentifier) -> Self {
+        Extension::from(&ski)
+    }
+}
+
+impl From<&SubjectKeyIdentifier> for Extension {
+    fn from(ski:&SubjectKeyIdentifier) -> Self {
         let extension_oid = ObjectIdentifier::from_slice(OID_CE_SUB_KEY_ID);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_bytes(&ski.0);

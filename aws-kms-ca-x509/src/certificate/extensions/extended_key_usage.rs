@@ -106,6 +106,12 @@ pub enum KeyPurpose {
 
 impl From<KeyPurpose> for ObjectIdentifier {
     fn from (kp: KeyPurpose) -> Self {
+        ObjectIdentifier::from(&kp)
+    }
+}
+
+impl From<&KeyPurpose> for ObjectIdentifier {
+    fn from (kp:&KeyPurpose) -> Self {
         use KeyPurpose::*;
         match kp {
             ServerAuth => ObjectIdentifier::from_slice(OID_KP_SERVER_AUTH),
@@ -123,10 +129,16 @@ pub struct ExtendedKeyUsage(pub Vec<KeyPurpose>); // TODO must have at least one
 
 impl From<ExtendedKeyUsage> for Extension {
     fn from (eku:ExtendedKeyUsage) -> Self {
+        Extension::from(&eku)
+    }
+}
+
+impl From<&ExtendedKeyUsage> for Extension {
+    fn from (eku:&ExtendedKeyUsage) -> Self {
         let extension_oid = ObjectIdentifier::from_slice(OID_CE_EXT_KEY_USAGE);
         let extension_value = yasna::construct_der(|writer| {
             writer.write_sequence(|writer| {
-                for kp in eku.0 {
+                for kp in &eku.0 {
                     let oid = ObjectIdentifier::from(kp);
                     writer.next().write_oid(&oid)
                 }
