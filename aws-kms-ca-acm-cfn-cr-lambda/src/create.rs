@@ -395,14 +395,14 @@ fn pem_encode_key(pkcs8_doc: &Document) -> String {
     // PEM encode the full root certificate
     let enc = base64::encode(pkcs8_doc.as_ref());
     let mut pem = String::new();
-    pem.push_str("-----BEGIN CERTIFICATE-----");
+    pem.push_str("-----BEGIN PRIVATE KEY-----");
     pem.push_str("\n");
     for (i, c) in enc.chars().enumerate() {
         if (i != 0) && (i % 64 == 0) { pem.push('\n'); }
         pem.push(c);
     }
     if &pem[pem.len()-1..] != "\n" { pem.push_str("\n"); }
-    pem.push_str("-----END CERTIFICATE-----");
+    pem.push_str("-----END PRIVATE KEY-----");
     pem
 }
 
