@@ -4,4 +4,5 @@ members = [
     "aws-kms-ca-x509",
     "aws-kms-ca-cli",
     "aws-kms-ca-root-cfn-cr-lambda",
+    "aws-kms-ca-acm-cfn-cr-lambda",
 ]
